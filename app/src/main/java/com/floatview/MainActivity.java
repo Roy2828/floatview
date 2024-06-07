@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 
 public class MainActivity extends BaseActivity {
-
+    boolean isHalfHiddel = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,6 +23,15 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(MainActivity.this,Main2Activity.class));
+            }
+        });
+
+
+        findViewById(R.id.bt_welt).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                floatingView.startHalfHidden(isHalfHiddel);
+                isHalfHiddel = !isHalfHiddel;
             }
         });
         System.out.println();

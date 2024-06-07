@@ -30,6 +30,7 @@ public class FloatingView extends RelativeLayout {
     private int mScreenWidth;
     private boolean mIsShow;
     private ImageView mSdv_cover;
+    private ShadowLayout mShadowLayout;
     private GifView mGif_float;
     private int mDp167;
     private int mDp48;
@@ -56,6 +57,7 @@ public class FloatingView extends RelativeLayout {
 
         mContext = context;
         inflate(context, R.layout.floating_view, this);
+        mShadowLayout =  findViewById(R.id.sl_layout);
 
         mSdv_cover = findViewById(R.id.sdv_cover);
         mGif_float = findViewById(R.id.gif_float);
@@ -119,7 +121,19 @@ public class FloatingView extends RelativeLayout {
                 inputStartY = (int) event.getRawY();
                 viewStartX = mFloatBallParams.x;
                 viewStartY = mFloatBallParams.y;
-
+                try {
+                    LayoutParams  params = (LayoutParams) mShadowLayout.getLayoutParams();
+                    params.setMarginEnd(0);
+                    params.setMarginStart(0);
+                    if (mFloatBallParams.x < mScreenWidth / 2 - getWidth() / 2){
+                        params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                    }else{
+                        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                    }
+                    mShadowLayout.setLayoutParams(params);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
             case MotionEvent.ACTION_MOVE:
 
@@ -150,7 +164,7 @@ public class FloatingView extends RelativeLayout {
                     setPressed(false);
                 }
                 //吸附贴边计算和动画
-                welt();
+                welt(false);
                 break;
             default:
                 break;
@@ -166,45 +180,60 @@ public class FloatingView extends RelativeLayout {
         return getX() == mScreenWidth - getWidth();
     }
 
-    //吸附贴边计算和动画
-    private void welt() {
 
-        int movedX = mFloatBallParams.x;
-        int movedY = mFloatBallParams.y;
+    public void startHalfHidden(boolean isHalfHidden){
+        RelativeLayout.LayoutParams  params = (RelativeLayout.LayoutParams) mShadowLayout.getLayoutParams();
+        if (mFloatBallParams.x < mScreenWidth / 2 - getWidth() / 2) {
 
-        moveVertical = false;
-        if (mFloatBallParams.y < getHeight() && mFloatBallParams.x >= slop && mFloatBallParams.x <= mScreenWidth - getWidth() - slop) {
-            movedY = 0;
-        } else if (mFloatBallParams.y > mScreenHeight - getHeight() * 2 && mFloatBallParams.x >= slop && mFloatBallParams.x <= mScreenWidth - getWidth() - slop) {
-            movedY = mScreenHeight - getHeight();
-        } else {
-            moveVertical = true;
-            if (mFloatBallParams.x < mScreenWidth / 2 - getWidth() / 2) {
-                movedX = 0;
-            } else {
-                movedX = mScreenWidth - getWidth();
+            if(isHalfHidden) {
+                params.setMarginStart(-100);
+                params.setMarginEnd(0);
+            }else{
+                params.setMarginStart(0);
+                params.setMarginEnd(0);
             }
+            params.addRule(RelativeLayout.ALIGN_PARENT_START);
+            params.removeRule(RelativeLayout.ALIGN_PARENT_END);
+
+        } else {
+            if(isHalfHidden) {
+                params.setMarginEnd(-100);
+                params.setMarginStart(0);
+            }else{
+                params.setMarginStart(0);
+                params.setMarginEnd(0);
+            }
+            params.addRule(RelativeLayout.ALIGN_PARENT_END);
+            params.removeRule(RelativeLayout.ALIGN_PARENT_START);
+        }
+        mShadowLayout.setLayoutParams(params);
+        welt(isHalfHidden);
+    }
+
+
+
+    //吸附贴边计算和动画
+    private void welt(boolean isHalfHidden) {
+
+        int movedX ;
+        if (mFloatBallParams.x < mScreenWidth / 2 - getWidth() / 2) {
+            movedX = 0;
+        } else {
+            movedX = mScreenWidth - getWidth();
         }
 
         int duration;
-        if (moveVertical) {
-            mValueAnimator = ValueAnimator.ofInt(mFloatBallParams.x, movedX);
-            duration = movedX - mFloatBallParams.x;
-        } else {
-            mValueAnimator = ValueAnimator.ofInt(mFloatBallParams.y, movedY);
-            duration = movedY - mFloatBallParams.y;
-        }
+
+        mValueAnimator = ValueAnimator.ofInt(mFloatBallParams.x, movedX);
+        duration = movedX - mFloatBallParams.x;
+
         mValueAnimator.setDuration(Math.abs(duration));
         mValueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 
             @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
+            public void onAnimationUpdate(ValueAnimator  animation) {
                 Integer level = (Integer) animation.getAnimatedValue();
-                if (moveVertical) {
-                    mFloatBallParams.x = level;
-                } else {
-                    mFloatBallParams.y = level;
-                }
+                mFloatBallParams.x = level;
                 updateWindowManager();
             }
         });
@@ -260,7 +289,7 @@ public class FloatingView extends RelativeLayout {
         }
         mWindowManager.addView(this, mFloatBallParams);
         //吸附贴边计算和动画
-        welt();
+        welt(false);
     }
 
     /**

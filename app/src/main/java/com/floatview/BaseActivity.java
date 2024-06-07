@@ -4,16 +4,16 @@ import android.content.Intent;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
 import com.feiyu.floatingview.weight.FloatingView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 public class BaseActivity extends AppCompatActivity {
 
-    private FloatingView floatingView;
+     FloatingView floatingView;
     private int numberMask;
 
     @Override
